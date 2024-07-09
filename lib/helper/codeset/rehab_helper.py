@@ -54,7 +54,6 @@ def insert_cardiology_code_set(
             HealthPlanId,
             CPTCode,
             "Procedure",
-            "ProcedureNumber",
             Plans,
             [YEAR]
         )
@@ -88,27 +87,28 @@ def process_rehab_excel_and_insert_data(cursor: Cursor, current_year: str, healt
     if check_if_health_plan_exists is not None:
         # RBM and CARDIOLOGY has same format
         excel_data = read_excel_file(excel_file, 'REHAB')
+              
         for row in excel_data:
             print(row)
-
             cpt_code = row.get('included_cpt_codes')
-            cpt_description: str = row.get('description')
-            insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)
-            modality = insert_modality(cursor=cursor, solution_id=solution_id, modality=row.get('modality'))
+            if cpt_code is not None:
+                cpt_description: str = row.get('description')
+                insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)
+                modality = insert_modality(cursor=cursor, solution_id=solution_id, modality=row.get('modality'))
 
-            procedure  = row.get('procedure_name')
-            plans = get_yes_no_properties(row)
-            
-            insert_cardiology_code_set(
-                cursor=cursor,
-                solution_id=solution_id,
-                modality_id=modality, 
-                health_plan_id=health_plan_id,
-                cpt_code=cpt_code,
-                procedure=procedure,
-                plans = plans,
-                year=current_year
-            )
+                procedure  = row.get('procedure_name')
+                plans = get_yes_no_properties(row)
+                
+                insert_cardiology_code_set(
+                    cursor=cursor,
+                    solution_id=solution_id,
+                    modality_id=modality, 
+                    health_plan_id=health_plan_id,
+                    cpt_code=cpt_code,
+                    procedure=procedure,
+                    plans = plans,
+                    year=current_year
+                )
 
 codeset_set = set() 
 

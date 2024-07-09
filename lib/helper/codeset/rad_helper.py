@@ -70,7 +70,9 @@ def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_
     if check_if_health_plan_exists is not None:
         excel_data = read_excel_file(excel_file, solution="RAD")
         for row in excel_data:
+            
             try:
+                print(row)
                 cpt_code = row.get('included_cpt_codes')
                 cpt_description: str = row.get('description')
                 insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)
@@ -78,7 +80,7 @@ def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_
                 grouper = next((value for key, value in row.items() if 'grouper_id' in key), None)
                 grouper_included = next((value for key, value in row.items() if 'grouper_included' in key), 'N/A')
                 quantity = row.get('quantity')
-                default_enabled= next((value for key, value in row.items() if 'default_/entered' in key), 'N/A')
+                default_enabled= next((value for key, value in row.items() if 'default_entered' in key), 'N/A')
                 grouper_default = next((value for key, value in row.items() if 'grouper_default' in key), [])
                 plans = get_yes_no_properties(row)
                 procedure = next((value for key, value in row.items() if 'procedure' in key), '')
