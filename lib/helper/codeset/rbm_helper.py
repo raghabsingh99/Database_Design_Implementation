@@ -124,3 +124,5 @@ def insert_cpt_code(cursor: Cursor, cpt_code, description):
         """
         cursor.execute(query, (cpt_code, cpt_code, description))
         codeset_set.add(cpt_code)
+
+       

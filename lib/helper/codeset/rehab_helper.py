@@ -54,7 +54,7 @@ def insert_cardiology_code_set(
             HealthPlanId,
             CPTCode,
             "Procedure",
-            "ProcedureNumber"
+            "ProcedureNumber",
             Plans,
             [YEAR]
         )
@@ -80,6 +80,7 @@ def insert_cardiology_code_set(
     cursor.execute(insert_sql, params)
     
     
+
 def process_rehab_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
     
     cursor.execute(create_table_if_not_exists_query(rehab_code_set_table_ddl, rehab_code_set_table_name))
@@ -88,6 +89,7 @@ def process_rehab_excel_and_insert_data(cursor: Cursor, current_year: str, healt
         # RBM and CARDIOLOGY has same format
         excel_data = read_excel_file(excel_file, 'REHAB')
         for row in excel_data:
+            print(row)
 
             cpt_code = row.get('included_cpt_codes')
             cpt_description: str = row.get('description')
@@ -108,7 +110,8 @@ def process_rehab_excel_and_insert_data(cursor: Cursor, current_year: str, healt
                 year=current_year
             )
 
-    
+codeset_set = set() 
+
 def insert_cpt_code(cursor: Cursor, cpt_code, description):
     description = description if description and description.strip() else ' '
     cpt_code = str(cpt_code)[:20]

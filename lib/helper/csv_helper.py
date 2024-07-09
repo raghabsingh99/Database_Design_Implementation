@@ -27,6 +27,7 @@ def read_excel_file(file_path: str, solution: str = '') -> list[dict]:
         sheet = workbook[sheet_name]
         
         header_row = get_header_starting_line(solution=solution)
+        
         # Read headers
         headers = []
         max_column = get_max_sheet_column(solution=solution, sheet=sheet)
