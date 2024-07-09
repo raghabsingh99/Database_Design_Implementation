@@ -1,0 +1,177 @@
+
+
+HEALTH_PLAN_QUERIES = {
+
+    "Radiology": """
+        SELECT
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH,
+            Count(AIMDW.dbo.FACT_EXAM.DIM_PRECERT_PK) COUNT,
+            'Radiology' solution
+        FROM
+            AIMDW.dbo.DIM_HEALTHPLAN
+        INNER JOIN AIMDW.dbo.FACT_PRECERT ON
+            (AIMDW.dbo.FACT_PRECERT.PRECERT_CLOSED_CLEAN_FLAG = 'Yes'
+                AND AIMDW.dbo.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK = AIMDW.dbo.FACT_PRECERT.DIM_HEALTHPLAN_PK)
+        INNER JOIN AIMDW.DBO.DIM_DATE ON
+            (AIMDW.DBO.DIM_DATE.DIM_DATE_PK = AIMDW.dbo.FACT_PRECERT.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+        INNER JOIN AIMDW.dbo.FACT_EXAM ON
+            (AIMDW.dbo.FACT_EXAM.CLOSED_CLEAN_FLAG = 'Yes'
+                AND AIMDW.dbo.FACT_PRECERT.DIM_PRECERT_PK = AIMDW.dbo.FACT_EXAM.DIM_PRECERT_PK)
+        WHERE
+            ( (AIMDW.DBO.DIM_DATE.CALENDAR_DATE) >= dateadd(mm,
+            datediff(mm,
+            0,
+            getdate())-12,
+            0)
+                AND 
+        (AIMDW.DBO.DIM_DATE.CALENDAR_DATE) < dateadd(mm,
+                datediff(mm,
+                0,
+                getdate()),
+                0) )
+        GROUP BY
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH
+    """,
+    "MSK": """
+        SELECT
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH,
+            count(distinct AIMDW.dbo.FACT_MSK_PRECERT.DIM_MSK_PRECERT_PK),
+            'MSK' solution
+        FROM
+            AIMDW.dbo.DIM_HEALTHPLAN INNER JOIN AIMDW.dbo.FACT_MSK_PRECERT ON (AIMDW.dbo.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK=AIMDW.dbo.FACT_MSK_PRECERT.DIM_HEALTHPLAN_PK  AND  AIMDW.dbo.FACT_MSK_PRECERT.PRECERT_CLOSED_CLEAN_FLAG='Yes')
+        INNER JOIN AIMDW.DBO.DIM_DATE ON (AIMDW.DBO.DIM_DATE.DIM_DATE_PK=AIMDW.dbo.FACT_MSK_PRECERT.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+        WHERE
+            ( ( AIMDW.DBO.DIM_DATE.CALENDAR_DATE ) >= dateadd(mm,datediff(mm,0,getdate())-12,0) AND 
+            ( AIMDW.DBO.DIM_DATE.CALENDAR_DATE ) < dateadd(mm,datediff(mm,0,getdate()),0)  )
+        GROUP BY
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID, 
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME, 
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME, 
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH
+            order by 1,4
+    """,
+    "oncology": """
+        SELECT DISTINCT
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH,
+            count(distinct AIMDW.dbo.FACT_ONC_PRECERT_REGIMEN.DIM_ONC_PRECERT_PK),
+            'oncology' solution
+        FROM
+            AIMDW.dbo.DIM_HEALTHPLAN INNER JOIN AIMDW.dbo.FACT_ONC_PRECERT_REGIMEN ON (AIMDW.dbo.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK=AIMDW.dbo.FACT_ONC_PRECERT_REGIMEN.DIM_HEALTHPLAN_PK  AND  AIMDW.dbo.FACT_ONC_PRECERT_REGIMEN.PRECERT_CLOSED_CLEAN_FLAG='Yes')
+        INNER JOIN AIMDW.dbo.DIM_DATE ON (AIMDW.dbo.DIM_DATE.DIM_DATE_PK=AIMDW.dbo.FACT_ONC_PRECERT_REGIMEN.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+        WHERE
+            ( 
+            ( ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) >= dateadd(mm,datediff(mm,0,getdate())-12,0) AND 
+            ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) < dateadd(mm,datediff(mm,0,getdate()),0)  )
+            )
+        GROUP BY
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID, 
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME, 
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME, 
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH
+    """,
+    "RAD": """
+        SELECT DISTINCT
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH,
+            count(distinct AIMDW.dbo.FACT_RAD_PRECERT.DIM_RAD_PRECERT_PK),
+            'RAD' solution
+        FROM
+            AIMDW.dbo.DIM_HEALTHPLAN INNER JOIN AIMDW.dbo.FACT_RAD_PRECERT ON (AIMDW.dbo.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK=AIMDW.dbo.FACT_RAD_PRECERT.DIM_HEALTHPLAN_PK  AND  AIMDW.dbo.FACT_RAD_PRECERT.PRECERT_CLOSED_CLEAN_FLAG='Yes')
+            INNER JOIN AIMDW.dbo.DIM_DATE ON (AIMDW.dbo.DIM_DATE.DIM_DATE_PK=AIMDW.dbo.FACT_RAD_PRECERT.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+        WHERE
+            ( 
+            ( ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) >= dateadd(mm,datediff(mm,0,getdate())-12,0) AND 
+            ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) < dateadd(mm,datediff(mm,0,getdate()),0)  )
+            )
+        GROUP BY
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID, 
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME, 
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME, 
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH
+    """,
+    "Rehab": """
+        SELECT DISTINCT
+            AIMDW.DBO.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.DBO.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.DBO.DIM_SUB_PRODUCT.SUB_PRODUCT_NAME,
+            AIMDW.DBO.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH,
+            count(distinct AIMDW.DBO.DIM_REHAB_PRECERT.DIM_REHAB_PRECERT_PK),
+            'Rehab' solution
+        FROM
+            AIMDW.DBO.DIM_DATE INNER JOIN AIMDW.DBO.FACT_REHAB_PRECERT ON (AIMDW.DBO.DIM_DATE.DIM_DATE_PK=AIMDW.DBO.FACT_REHAB_PRECERT.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+            INNER JOIN AIMDW.DBO.DIM_HEALTHPLAN ON (AIMDW.DBO.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK=AIMDW.DBO.FACT_REHAB_PRECERT.DIM_HEALTHPLAN_PK)
+            INNER JOIN AIMDW.DBO.DIM_REHAB_PRECERT ON (AIMDW.DBO.DIM_REHAB_PRECERT.DIM_REHAB_PRECERT_PK=AIMDW.DBO.FACT_REHAB_PRECERT.DIM_REHAB_PRECERT_PK)
+            INNER JOIN AIMDW.DBO.DIM_SUB_PRODUCT ON (AIMDW.DBO.DIM_SUB_PRODUCT.DIM_SUB_PRODUCT_PK=AIMDW.DBO.FACT_REHAB_PRECERT.DIM_SUB_PRODUCT_PK)
+        WHERE
+            ( 
+            ( ( AIMDW.DBO.DIM_DATE.CALENDAR_DATE )  >= dateadd(mm,datediff(mm,0,getdate())-12,0) AND 
+            ( AIMDW.DBO.DIM_DATE.CALENDAR_DATE )  < dateadd(mm,datediff(mm,0,getdate()),0)  )
+            )
+        GROUP BY
+            AIMDW.DBO.DIM_HEALTHPLAN.HEALTHPLAN_ID, 
+            AIMDW.DBO.DIM_HEALTHPLAN.HEALTHPLAN_NAME, 
+            AIMDW.DBO.DIM_SUB_PRODUCT.SUB_PRODUCT_NAME, 
+            AIMDW.DBO.DIM_HEALTHPLAN.GROUP_NAME, 
+            AIMDW.DBO.DIM_DATE.FIRST_OF_MONTH
+    """,
+    "sleep": """
+        SELECT DISTINCT
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID,
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME,
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME,
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH,
+            count(distinct AIMDW.dbo.FACT_SMT_PRECERT.DIM_SMT_PRECERT_PK),
+            'Sleep' solution
+        FROM
+            AIMDW.dbo.DIM_HEALTHPLAN INNER JOIN AIMDW.dbo.FACT_SMT_PRECERT ON (AIMDW.dbo.DIM_HEALTHPLAN.DIM_HEALTHPLAN_PK=AIMDW.dbo.FACT_SMT_PRECERT.DIM_HEALTHPLAN_PK  AND  AIMDW.dbo.FACT_SMT_PRECERT.PRECERT_CLOSED_CLEAN_FLAG='Yes')
+            INNER JOIN AIMDW.dbo.DIM_DATE ON (AIMDW.dbo.DIM_DATE.DIM_DATE_PK=AIMDW.dbo.FACT_SMT_PRECERT.DIM_PRECERT_ORG_CLOSE_DATE_PK)
+        WHERE
+            ( 
+            ( ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) >= dateadd(mm,datediff(mm,0,getdate())-12,0) AND 
+            ( AIMDW.dbo.DIM_DATE.CALENDAR_DATE ) < dateadd(mm,datediff(mm,0,getdate()),0)  )
+            )
+        GROUP BY
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_ID, 
+            AIMDW.dbo.DIM_HEALTHPLAN.HEALTHPLAN_NAME, 
+            AIMDW.dbo.DIM_HEALTHPLAN.GROUP_NAME, 
+            AIMDW.dbo.DIM_DATE.FIRST_OF_MONTH
+    """
+}
+
+
+
+SOLUTION_DDL = """
+
+CREATE TABLE Solution (
+	ID INT IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+);
+
+"""
+
+modality_table_name = "Modality"
+
+modality_table_ddl = f"""
+CREATE TABLE {modality_table_name} (
+	ID INT  IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    SolutionId INT NOT NULL,
+    CONSTRAINT FK_ModalitySolution_SLSLJlksdf FOREIGN KEY (SolutionId) REFERENCES Solution(ID)
+);
+"""
+
