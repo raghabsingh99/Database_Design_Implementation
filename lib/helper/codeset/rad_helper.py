@@ -72,7 +72,7 @@ def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_
         for row in excel_data:
             
             try:
-                print(row)
+                
                 cpt_code = row.get('included_cpt_codes')
                 cpt_description: str = row.get('description')
                 insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)

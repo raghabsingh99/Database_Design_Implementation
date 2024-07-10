@@ -1,4 +1,4 @@
-
+import logging
 
 from sqlite3 import Cursor
 
@@ -47,6 +47,7 @@ def insert_cardiology_code_set(
     ):
     plans = plans.__str__()
     cpt_code = str(cpt_code)
+    print("++++++++++++",cpt_code)
     # Ensure year is a string
     year = str(year)
     insert_sql = f"""
@@ -81,7 +82,10 @@ def insert_cardiology_code_set(
         solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year,
         solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year
     )
-    cursor.execute(insert_sql, params)
+    try:
+        cursor.execute(insert_sql, params)
+    except Exception as e:
+        logging.info(f"error {e}occurted on cpt code{cpt_code}")
     
     
 def process_rbm_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
@@ -93,6 +97,7 @@ def process_rbm_excel_and_insert_data(cursor: Cursor, current_year: str, health_
         excel_data = read_excel_file(excel_file, 'RADIOLOGY')
         for row in excel_data:
             cpt_code = row.get('included_cpt_codes')
+            
             cpt_description: str = row.get('description')
             insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)
             modality = insert_modality(cursor=cursor, solution_id=solution_id, modality=row.get('modality'))

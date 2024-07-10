@@ -89,7 +89,7 @@ def process_rehab_excel_and_insert_data(cursor: Cursor, current_year: str, healt
         excel_data = read_excel_file(excel_file, 'REHAB')
               
         for row in excel_data:
-            print(row)
+            
             cpt_code = row.get('included_cpt_codes')
             if cpt_code is not None:
                 cpt_description: str = row.get('description')

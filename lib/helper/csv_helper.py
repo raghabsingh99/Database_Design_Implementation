@@ -43,6 +43,7 @@ def read_excel_file(file_path: str, solution: str = '') -> list[dict]:
                 
             headers.append(to_snake_case(header))
             headers = list(filter(None, headers))
+        print("----HEADERS", headers)
             
         # Read data rows into a list of dictionaries
         for row in range(header_row + 1, sheet.max_row + 1):
