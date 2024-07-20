@@ -28,6 +28,8 @@ sleep_code_set_table_ddl =  f"""
 
             YEAR varchar(10) NOT NULL,
             HealthPlanId int NOT NULL,
+            Location CHAR(2),
+            CONSTRAINT FK_{sleep_code_set_table_name}_Location FOREIGN KEY (Location) REFERENCES States(ID),
             CONSTRAINT PK_{sleep_code_set_table_name} PRIMARY KEY (ID),
             CONSTRAINT FK_{sleep_code_set_table_name}_Solution FOREIGN KEY (SolutionId) REFERENCES Solution(ID),
             CONSTRAINT FK_{sleep_code_set_table_name}_CPTCode FOREIGN KEY (CPTCode) REFERENCES CPTCodes(CPTCode),
@@ -35,7 +37,7 @@ sleep_code_set_table_ddl =  f"""
         );
         """
 
-def insert_sleep_code_set(cursor: Cursor, solution_id: int,  cpt_code: str, grouper: str, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans: dict, year, health_plan_id: int):
+def insert_sleep_code_set(cursor: Cursor, solution_id: int,  cpt_code: str, grouper: str, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans: dict, year, health_plan_id: int, location: str):
     cpt_code = str(cpt_code)
     plans = plans.__str__()
     # Ensure year is a string
@@ -56,10 +58,11 @@ def insert_sleep_code_set(cursor: Cursor, solution_id: int,  cpt_code: str, grou
             PlaceOfService,
             Plans,
             [YEAR],
+            Location,
             HealthPlanId
         )
         SELECT
-            ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT 1
             FROM {sleep_code_set_table_name}
@@ -74,19 +77,20 @@ def insert_sleep_code_set(cursor: Cursor, solution_id: int,  cpt_code: str, grou
                 PlaceOfService = ? AND
                 Plans = ? AND
                 [YEAR] = ? AND
-                HealthPlanId = ?
+                HealthPlanId = ? AND
+                Location = ?
         );
     """
     params = (
-        solution_id, cpt_code, grouper, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans, year, health_plan_id,
-        solution_id, cpt_code, grouper, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans, year, health_plan_id
+        solution_id, cpt_code, grouper, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans, year, health_plan_id, location,
+        solution_id, cpt_code, grouper, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans, year, health_plan_id, location
     )
     cursor.execute(insert_sql, params)
     
 
 
 
-def process_sleep_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
+def process_sleep_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id, location: str):
 
     cursor.execute(create_table_if_not_exists_query(sleep_code_set_table_ddl, sleep_code_set_table_name))
     
@@ -118,7 +122,8 @@ def process_sleep_excel_and_insert_data(cursor: Cursor, current_year: str, healt
                 place_of_service=place_of_service,
                 plans=plans,
                 year=current_year,
-                health_plan_id=health_plan_id
+                health_plan_id=health_plan_id, 
+                location=location
             )
 
 

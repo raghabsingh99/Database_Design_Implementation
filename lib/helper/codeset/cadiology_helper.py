@@ -25,6 +25,8 @@ cardiology_code_set_table_ddl = f"""
             Plans NVARCHAR(MAX) NOT NULL,
 
             YEAR varchar(10) NOT NULL,
+            Location CHAR(2),
+            CONSTRAINT FK_{cardiology_code_set_table_name}_Location FOREIGN KEY (Location) REFERENCES States(ID),
             CONSTRAINT PK_{cardiology_code_set_table_name} PRIMARY KEY (ID),
             CONSTRAINT FK_{cardiology_code_set_table_name}_HealthPlan FOREIGN KEY (HealthPlanId) REFERENCES HealthPlan(ID),
             CONSTRAINT FK_{cardiology_code_set_table_name}_Modality_asldfkj FOREIGN KEY (ModalityId) REFERENCES Modality(ID),
@@ -43,7 +45,8 @@ def insert_cardiology_code_set(
     procedure_number,
     procedure, 
     plans : dict,
-    year
+    year,
+    location: str
     ):
     plans = plans.__str__()
     cpt_code = str(cpt_code)
@@ -59,10 +62,11 @@ def insert_cardiology_code_set(
             "Procedure",
             "ProcedureNumber"
             Plans,
-            [YEAR]
+            [YEAR],
+            Location
         )
         SELECT
-            ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT 1
             FROM {cardiology_code_set_table_name}
@@ -74,17 +78,18 @@ def insert_cardiology_code_set(
                 "Procedure" = ? AND
                 "ProcedureNumber" = ? AND
                 Plans = ? AND
-                [YEAR] = ?
+                [YEAR] = ? AND
+                Location = ?
         );
     """
     params = (
-        solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year,
-        solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year
+        solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year, location,
+        solution_id, modality_id, health_plan_id, cpt_code, procedure, procedure_number, plans, year, location
     )
     cursor.execute(insert_sql, params)
     
     
-def process_cardiology_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
+def process_cardiology_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id, location: str):
     
     cursor.execute(create_table_if_not_exists_query(cardiology_code_set_table_ddl, cardiology_code_set_table_name))
     check_if_health_plan_exists = get_health_plan_by_id(health_plan_id, cursor=cursor)
@@ -110,7 +115,8 @@ def process_cardiology_excel_and_insert_data(cursor: Cursor, current_year: str, 
                 procedure=procedure,
                 procedure_number=procedure_number,
                 plans = plans,
-                year=current_year
+                year=current_year,
+                location = location
             )
 
     
