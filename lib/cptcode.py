@@ -7,6 +7,7 @@ from lib.helper.codeset.codeset_switch import codeset_switch
 from lib.helper.common import get_health_plan_by_id, get_solution_id_by_name
 from lib.helper.code_set_query import *
 from lib.helper.health_plan_quries import *
+from lib.helper.location_helper import extract_state
 
 code_set_table_name = "CodeSet"
 cpt_table_name = "CPTCodes"
@@ -182,7 +183,8 @@ def process_excel_and_insert_data(excel_file, cursor, file, current_year_str: st
             check_if_health_plan_exists = get_health_plan_by_id(health_plan_id, cursor=cursor)
             if check_if_health_plan_exists is not None:
                 solution_id = get_solution_id_by_name(solution, cursor=cursor)
-                codeset_switch(cursor=cursor, solution_id=solution_id, solution=solution, current_year=current_year_str, health_plan_id=health_plan_id, excel_file=excel_file)
+                location = extract_state(filename=file)
+                codeset_switch(cursor=cursor, solution_id=solution_id, solution=solution, current_year=current_year_str, health_plan_id=health_plan_id, excel_file=excel_file, location=location)
 
 
 

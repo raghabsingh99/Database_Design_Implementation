@@ -21,6 +21,8 @@ rad_code_set_table_ddl = f"""
             Plans NVARCHAR(MAX) NOT NULL,
 
             YEAR varchar(10) NOT NULL,
+            Location CHAR(2),
+            CONSTRAINT FK_{rad_code_set_table_name}_Location FOREIGN KEY (Location) REFERENCES States(ID),
             CONSTRAINT PK_{rad_code_set_table_name} PRIMARY KEY (ID),
             CONSTRAINT FK_{rad_code_set_table_name}_HealthPlan FOREIGN KEY (HealthPlanId) REFERENCES HealthPlan(ID),
             CONSTRAINT FK_{rad_code_set_table_name}_Modality_asldfkj FOREIGN KEY (ModalityId) REFERENCES Modality(ID),

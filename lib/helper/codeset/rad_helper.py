@@ -8,7 +8,7 @@ from lib.helper.code_set_query import insert_modality, rad_code_set_table_ddl, r
 from lib.helper.common import get_health_plan_by_id, get_yes_no_properties
 from lib.helper.csv_helper import read_excel_file
 
-def insert_rad_code_set(cursor: Cursor, solution_id, modality_id, health_plan_id, cpt_code, procedure, grouper, grouper_included, quantity, default_enabled, grouper_default, plans: dict, year):
+def insert_rad_code_set(cursor: Cursor, solution_id, modality_id, health_plan_id, cpt_code, procedure, grouper, grouper_included, quantity, default_enabled, grouper_default, plans: dict, year, location: str):
     
     plans = plans.__str__()
     cpt_code = clean_string(cpt_code)
@@ -32,10 +32,11 @@ def insert_rad_code_set(cursor: Cursor, solution_id, modality_id, health_plan_id
             DefaultEnabled,
             GrouperDefault,
             Plans,
-            [YEAR]
+            [YEAR],
+            Location
         )
         SELECT
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT 1
             FROM CodeSetRad
@@ -51,20 +52,21 @@ def insert_rad_code_set(cursor: Cursor, solution_id, modality_id, health_plan_id
                 DefaultEnabled = ? AND
                 GrouperDefault = ? AND
                 Plans = ? AND
-                [YEAR] = ?
+                [YEAR] = ? AND
+                Location = ?
         );
     """
     params = (
         solution_id, modality_id, health_plan_id, cpt_code, procedure, grouper, grouper_included,
-        quantity, default_enabled, grouper_default, plans, year,
+        quantity, default_enabled, grouper_default, plans, year, location,
         solution_id, modality_id, health_plan_id, cpt_code, procedure, grouper, grouper_included,
-        quantity, default_enabled, grouper_default, plans, year
+        quantity, default_enabled, grouper_default, plans, year, location
     )
     cursor.execute(insert_sql, params)
 
 
 
-def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
+def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id, location: str):
     cursor.execute(create_table_if_not_exists_query(rad_code_set_table_ddl, rad_code_set_table_name))
     check_if_health_plan_exists = get_health_plan_by_id(health_plan_id, cursor=cursor)
     if check_if_health_plan_exists is not None:
@@ -85,7 +87,7 @@ def process_rad_excel_and_insert_data(cursor: Cursor, current_year: str, health_
                 plans = get_yes_no_properties(row)
                 procedure = next((value for key, value in row.items() if 'procedure' in key), '')
 
-                insert_rad_code_set(cursor=cursor, solution_id=solution_id, cpt_code=cpt_code, modality_id=modality, default_enabled=default_enabled, grouper=grouper, grouper_default=grouper_default, grouper_included=grouper_included, health_plan_id=health_plan_id, plans=plans, procedure=procedure, quantity=quantity, year=current_year)
+                insert_rad_code_set(cursor=cursor, solution_id=solution_id, cpt_code=cpt_code, modality_id=modality, default_enabled=default_enabled, grouper=grouper, grouper_default=grouper_default, grouper_included=grouper_included, health_plan_id=health_plan_id, plans=plans, procedure=procedure, quantity=quantity, year=current_year, location=location)
             except:
                 print(f"Error while persisting {row.items()}")
 

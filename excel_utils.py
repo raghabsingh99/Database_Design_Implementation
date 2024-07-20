@@ -1,6 +1,7 @@
 import pandas as pd
 import pyodbc
 import argparse 
+from lib.common_utils import handle_state
 from lib.cptcode import migrate_cpt_codes
 
 
@@ -36,6 +37,7 @@ def main(migration_type):
     # Establishing the connection
     # print(f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}')
     conn = pyodbc.connect(f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password};Trusted_Connection=yes')
+    handle_state(connection=conn)
     # conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
     # healthplan(cursor)
