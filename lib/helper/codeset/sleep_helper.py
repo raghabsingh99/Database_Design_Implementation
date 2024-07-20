@@ -17,7 +17,7 @@ sleep_code_set_table_ddl =  f"""
             CPTCode varchar(20)  NOT NULL,
             
             
-            Grouper varchar(MAX) NOT NULL,
+            Grouper varchar(MAX) ,
             Quantity Int,
             Qualifier varchar(MAX) NOT NULL,
             AuthTimeFrame varchar(MAX) NOT NULL,
@@ -36,6 +36,8 @@ sleep_code_set_table_ddl =  f"""
         """
 
 def insert_sleep_code_set(cursor: Cursor, solution_id: int,  cpt_code: str, grouper: str, quantity, qualifier, auth_time_frame, type_of_service, place_of_service, plans: dict, year, health_plan_id: int):
+    if grouper is None:
+        return None
     cpt_code = str(cpt_code)
     plans = plans.__str__()
     # Ensure year is a string
@@ -98,6 +100,7 @@ def process_sleep_excel_and_insert_data(cursor: Cursor, current_year: str, healt
             cpt_description: str = row.get('description')
             insert_cpt_code(cursor=cursor, cpt_code=cpt_code, description= cpt_description)
             grouper = next((value for key, value in row.items() if 'grouper_name' in key), 'N/A')
+            
             quantity = row.get('quantity')
             qualifier= next((value for key, value in row.items() if 'qualifier' in key), 'N/A')
             auth_time_frame = next((value for key, value in row.items() if 'auth_time_frame' in key), 'N/A')
@@ -105,6 +108,7 @@ def process_sleep_excel_and_insert_data(cursor: Cursor, current_year: str, healt
             place_of_service = next((value for key, value in row.items() if 'place_of_service' in key), 'N/A')
             
             plans = get_yes_no_properties(row)
+            
             
             insert_sleep_code_set(
                 cursor=cursor,

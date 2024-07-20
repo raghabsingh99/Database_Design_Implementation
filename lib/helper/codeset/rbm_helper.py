@@ -47,7 +47,7 @@ def insert_cardiology_code_set(
     ):
     plans = plans.__str__()
     cpt_code = str(cpt_code)
-    print("++++++++++++",cpt_code)
+    
     # Ensure year is a string
     year = str(year)
     insert_sql = f"""
