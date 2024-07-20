@@ -26,6 +26,8 @@ msk_code_set_table_ddl = f"""
             Plans NVARCHAR(MAX) NOT NULL,
 
             YEAR varchar(10) NOT NULL,
+            Location CHAR(2),
+            CONSTRAINT FK_{mks_code_set_table_name}_Location FOREIGN KEY (Location) REFERENCES States(ID),
             CONSTRAINT PK_{mks_code_set_table_name}Rad PRIMARY KEY (ID),
             CONSTRAINT FK_{mks_code_set_table_name}Rad_HealthPlan FOREIGN KEY (HealthPlanId) REFERENCES HealthPlan(ID),
             CONSTRAINT FK_{mks_code_set_table_name}Rad_Modality_asldfkj FOREIGN KEY (ModalityId) REFERENCES Modality(ID),
@@ -43,7 +45,8 @@ def insert_msk_code_set(
     cpt_code, 
     procedure, 
     plans : dict,
-    year
+    year,
+    location: str
     ):
     
     plans = plans.__str__()
@@ -60,10 +63,11 @@ def insert_msk_code_set(
             CPTCode,
             "Procedure",
             Plans,
-            [YEAR]
+            [YEAR],
+            Location
         )
         SELECT
-            ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?
         WHERE NOT EXISTS (
             SELECT 1
             FROM CodeSetMSK
@@ -74,17 +78,18 @@ def insert_msk_code_set(
                 CPTCode = ? AND
                 "Procedure" = ? AND
                 Plans = ? AND
-                [YEAR] = ?
+                [YEAR] = ? AND
+                Location
         );
     """
     params = (
-        solution_id, modality_id, health_plan_id, cpt_code, procedure, plans, year,
-        solution_id, modality_id, health_plan_id, cpt_code, procedure, plans, year
+        solution_id, modality_id, health_plan_id, cpt_code, procedure, plans, year, location,
+        solution_id, modality_id, health_plan_id, cpt_code, procedure, plans, year, location
     )
     cursor.execute(insert_sql, params)
 
 
-def process_msk_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id):
+def process_msk_excel_and_insert_data(cursor: Cursor, current_year: str, health_plan_id: int, excel_file, solution_id, location: str):
     
     cursor.execute(create_table_if_not_exists_query(msk_code_set_table_ddl, mks_code_set_table_name))
     
@@ -111,7 +116,8 @@ def process_msk_excel_and_insert_data(cursor: Cursor, current_year: str, health_
                     cpt_code=cpt_code,
                     procedure=procedure,
                     plans = plans,
-                    year=current_year
+                    year=current_year,
+                    location=location
                 )
 
 
