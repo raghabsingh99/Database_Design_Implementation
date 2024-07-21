@@ -79,7 +79,7 @@ def insert_msk_code_set(
                 "Procedure" = ? AND
                 Plans = ? AND
                 [YEAR] = ? AND
-                Location
+                Location =?
         );
     """
     params = (
